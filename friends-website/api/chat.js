@@ -1,4 +1,4 @@
-// Vercel Serverless Function - handles both Rentry fetching AND Gemini API
+// Vercel Serverless Function - Google Gemini API (Stable Models)
 export default async function handler(request, response) {
   response.setHeader('Access-Control-Allow-Credentials', true);
   response.setHeader('Access-Control-Allow-Origin', '*');
@@ -42,24 +42,28 @@ export default async function handler(request, response) {
       ? `${systemPrompt}\n\nHere is your character knowledge:\n${knowledgeText}`
       : systemPrompt;
 
+    // Use stable model (configurable via env var, defaults to gemini-1.5-flash-latest)
+    // Recommended: gemini-1.5-flash-latest (free tier, stable)
+    // Alternative: gemini-1.5-pro-latest (better quality, may have limits)
+    const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash-latest';
+
     // Convert to Gemini format
     const geminiMessages = messages.map(msg => ({
       role: msg.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: msg.content }]
     }));
 
+    // Add system prompt as first user message
     geminiMessages.unshift({
       role: 'user',
       parts: [{ text: fullSystemPrompt }]
     });
     geminiMessages.splice(1, 0, {
       role: 'model',
-      parts: [{ text: 'Understood! I will stay in character based on the knowledge provided.' }]
+      parts: [{ text: 'Understood! I will stay in character.' }]
     });
 
-    // Use configurable model (defaults to gemini-1.5-flash-latest)
-    const model = process.env.GEMINI_MODEL || 'gemini-2.5-pro';
-    
+    // Call Gemini API with v1beta endpoint
     const apiResponse = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GOOGLE_API_KEY}`,
       {
@@ -78,8 +82,10 @@ export default async function handler(request, response) {
     const data = await apiResponse.json();
 
     if (!apiResponse.ok) {
-      console.error('Gemini error:', data);
-      response.status(apiResponse.status).json({ error: data.error?.message || 'Gemini API error' });
+      console.error('Gemini API error:', data);
+      response.status(apiResponse.status).json({ 
+        error: data.error?.message || 'Gemini API error' 
+      });
       return;
     }
 

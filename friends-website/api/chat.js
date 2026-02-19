@@ -58,7 +58,7 @@ export default async function handler(request, response) {
     });
 
     // Use configurable model (defaults to gemini-1.5-flash-latest)
-    const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash-latest';
+    const model = process.env.GEMINI_MODEL || 'gemini-3-deep-think';
     
     const apiResponse = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GOOGLE_API_KEY}`,

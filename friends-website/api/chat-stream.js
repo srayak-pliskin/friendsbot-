@@ -1,4 +1,4 @@
-// Vercel Serverless Function - Gemini API with STREAMING support
+// Vercel Serverless Function - Streaming Gemini API
 export default async function handler(request, response) {
   response.setHeader('Access-Control-Allow-Credentials', true);
   response.setHeader('Access-Control-Allow-Origin', '*');
@@ -37,7 +37,7 @@ export default async function handler(request, response) {
       knowledgeText = results.filter(Boolean).join('\n\n');
     }
 
-    // Build full system prompt with knowledge
+    // Build full system prompt
     const fullSystemPrompt = knowledgeText
       ? `${systemPrompt}\n\nHere is your character knowledge:\n${knowledgeText}`
       : systemPrompt;
@@ -50,6 +50,7 @@ export default async function handler(request, response) {
       parts: [{ text: msg.content }]
     }));
 
+    // Add system prompt
     geminiMessages.unshift({
       role: 'user',
       parts: [{ text: fullSystemPrompt }]
@@ -59,9 +60,9 @@ export default async function handler(request, response) {
       parts: [{ text: 'Understood! I will stay in character.' }]
     });
 
-    // Call Gemini API - STREAMING enabled
+    // Call Gemini API for streaming
     const apiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${process.env.GOOGLE_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?key=${process.env.GOOGLE_API_KEY}&alt=sse`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -78,17 +79,17 @@ export default async function handler(request, response) {
     if (!apiResponse.ok) {
       const errorData = await apiResponse.json();
       console.error('Gemini API error:', errorData);
-      return response.status(apiResponse.status).json({ 
+      response.status(apiResponse.status).json({ 
         error: errorData.error?.message || 'Gemini API error' 
       });
+      return;
     }
 
-    // Set up SSE streaming
+    // Set up SSE (Server-Sent Events) for streaming
     response.setHeader('Content-Type', 'text/event-stream');
     response.setHeader('Cache-Control', 'no-cache');
     response.setHeader('Connection', 'keep-alive');
 
-    // Stream the response
     const reader = apiResponse.body.getReader();
     const decoder = new TextDecoder();
 
@@ -97,22 +98,20 @@ export default async function handler(request, response) {
       if (done) break;
 
       const chunk = decoder.decode(value);
-      const lines = chunk.split('\n');
-
+      const lines = chunk.split('\n').filter(line => line.trim().startsWith('data:'));
+      
       for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const jsonStr = line.slice(6);
-          if (jsonStr.trim() === '[DONE]') continue;
-          
-          try {
-            const data = JSON.parse(jsonStr);
-            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (text) {
-              response.write(`data: ${JSON.stringify({ content: text })}\n\n`);
-            }
-          } catch (e) {
-            // Skip malformed JSON
+        const data = line.replace('data:', '').trim();
+        if (data === '[DONE]') continue;
+        
+        try {
+          const parsed = JSON.parse(data);
+          const text = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) {
+            response.write(`data: ${JSON.stringify({ text })}\n\n`);
           }
+        } catch (e) {
+          // Skip invalid JSON
         }
       }
     }

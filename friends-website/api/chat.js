@@ -57,8 +57,11 @@ export default async function handler(request, response) {
       parts: [{ text: 'Understood! I will stay in character based on the knowledge provided.' }]
     });
 
+    // Use configurable model (defaults to gemini-1.5-flash-latest)
+    const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash-latest';
+    
     const apiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GOOGLE_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GOOGLE_API_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

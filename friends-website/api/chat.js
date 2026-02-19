@@ -42,9 +42,9 @@ export default async function handler(request, response) {
       ? `${systemPrompt}\n\nHere is your character knowledge:\n${knowledgeText}`
       : systemPrompt;
 
-    // Use gemini-1.5-pro - current stable version (as of Feb 2026)
-    // Alternative: gemini-2.5-pro (if available on your account)
-    const model = process.env.GEMINI_MODEL || 'gemini-1.5-pro';
+    // Use gemini-2.5-flash - confirmed available on your account (Feb 2026)
+    // This is the latest stable flash model - fast and free tier friendly
+    const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
     // Convert to Gemini format
     const geminiMessages = messages.map(msg => ({

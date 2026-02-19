@@ -135,26 +135,26 @@ const FriendsChat = () => {
   // Generate character response using Anthropic API
   const generateResponse = async (character, userMessage, conversationHistory) => {
     setIsLoading(true);
-    
     try {
-      // Fetch relevant knowledge
-      const knowledge = await fetchCharacterKnowledge(character, userMessage);
+      const char = CHARACTERS[character];
       
-      // Build conversation context
-      const systemPrompt = `You are ${CHARACTERS[character].name} from the TV show Friends. 
+      // Detect which Rentry sections are relevant to this query
+      const sections = detectRelevantSections(userMessage);
+      const rentryUrls = sections
+        .filter(s => char.rentryPages[s])
+        .map(s => char.rentryPages[s]);
+
+      const systemPrompt = `You are ${char.name} from the TV show Friends.
 
 CRITICAL INSTRUCTIONS:
 - Stay completely in character at all times
 - Use the provided knowledge base to answer accurately
 - Reference specific events, episodes, and details from the show
 - Maintain your personality, speech patterns, and catchphrases
-- If asked about something not in your knowledge base, respond as your character would (e.g., "I don't really remember that" or make a character-appropriate comment)
+- If asked about something not in your knowledge base, respond as your character would
 - Never break character or mention that you're an AI
 
-CHARACTER KNOWLEDGE BASE:
-${knowledge}
-
-Respond naturally as ${CHARACTERS[character].name} would, using the knowledge above to be accurate about events, relationships, and details from the show.`;
+Respond naturally as ${char.name} would, using the knowledge provided to be accurate about events, relationships, and details from the show.`;
 
       const messages = [
         ...conversationHistory.map(msg => ({
@@ -164,14 +164,14 @@ Respond naturally as ${CHARACTERS[character].name} would, using the knowledge ab
         { role: 'user', content: userMessage }
       ];
 
+      // Send Rentry URLs to backend - fetched server-side to avoid CORS issues
       const response = await fetch('/api/chat', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          systemPrompt: systemPrompt,
-          messages: messages
+          systemPrompt,
+          messages,
+          rentryUrls
         })
       });
 
@@ -180,9 +180,9 @@ Respond naturally as ${CHARACTERS[character].name} would, using the knowledge ab
       if (data.content) {
         return data.content;
       } else {
-        throw new Error(data.error || 'Invalid response from API');
+        throw new Error(data.error || 'Invalid response');
       }
-      
+
     } catch (error) {
       console.error('Error generating response:', error);
       return "Oh my God, something went wrong! Can you try asking me again?";
@@ -191,7 +191,7 @@ Respond naturally as ${CHARACTERS[character].name} would, using the knowledge ab
     }
   };
 
-  const handleSendMessage = async () => {
+    const handleSendMessage = async () => {
     if (!input.trim() || isLoading) return;
 
     const userMessage = input.trim();

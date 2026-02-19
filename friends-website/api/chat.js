@@ -1,68 +1,90 @@
-// Google Gemini API - Completely FREE!
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+// Vercel Serverless Function - handles both Rentry fetching AND Gemini API
+export default async function handler(request, response) {
+  response.setHeader('Access-Control-Allow-Credentials', true);
+  response.setHeader('Access-Control-Allow-Origin', '*');
+  response.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
+  response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (request.method === 'OPTIONS') {
+    response.status(200).end();
+    return;
   }
 
-  const { messages, systemPrompt } = req.body;
+  if (request.method !== 'POST') {
+    response.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
+
+  const { messages, systemPrompt, rentryUrls } = request.body;
 
   if (!messages || !systemPrompt) {
-    return res.status(400).json({ error: 'Missing messages or systemPrompt' });
+    response.status(400).json({ error: 'Missing required fields' });
+    return;
   }
 
   try {
-    // Convert messages to Gemini format
+    // Fetch Rentry knowledge pages server-side (avoids CORS issues)
+    let knowledgeText = '';
+    if (rentryUrls && rentryUrls.length > 0) {
+      const fetchPromises = rentryUrls.map(url =>
+        fetch(url, {
+          headers: { 'User-Agent': 'Mozilla/5.0' }
+        })
+        .then(r => r.ok ? r.text() : '')
+        .catch(() => '')
+      );
+      const results = await Promise.all(fetchPromises);
+      knowledgeText = results.filter(Boolean).join('\n\n');
+    }
+
+    // Build full system prompt with knowledge
+    const fullSystemPrompt = knowledgeText
+      ? `${systemPrompt}\n\nHere is your character knowledge:\n${knowledgeText}`
+      : systemPrompt;
+
+    // Convert to Gemini format
     const geminiMessages = messages.map(msg => ({
       role: msg.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: msg.content }]
     }));
 
-    // Add system prompt as first user message
     geminiMessages.unshift({
       role: 'user',
-      parts: [{ text: systemPrompt }]
+      parts: [{ text: fullSystemPrompt }]
     });
     geminiMessages.splice(1, 0, {
       role: 'model',
-      parts: [{ text: 'I understand. I will respond as this character based on the knowledge provided.' }]
+      parts: [{ text: 'Understood! I will stay in character based on the knowledge provided.' }]
     });
 
-    const response = await fetch(
+    const apiResponse = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GOOGLE_API_KEY}`,
       {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: geminiMessages,
           generationConfig: {
             temperature: 0.9,
-            maxOutputTokens: 1000,
+            maxOutputTokens: 1000
           }
-        }),
+        })
       }
     );
 
-    const data = await response.json();
+    const data = await apiResponse.json();
 
-    if (!response.ok) {
-      console.error('Gemini API error:', data);
-      return res.status(response.status).json({ 
-        error: data.error?.message || 'API error' 
-      });
+    if (!apiResponse.ok) {
+      console.error('Gemini error:', data);
+      response.status(apiResponse.status).json({ error: data.error?.message || 'Gemini API error' });
+      return;
     }
 
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    
-    if (!text) {
-      return res.status(500).json({ error: 'No response generated' });
-    }
-
-    return res.status(200).json({ content: text });
+    response.status(200).json({ content: text || 'No response generated' });
 
   } catch (error) {
-    console.error('API error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('Error:', error);
+    response.status(500).json({ error: 'Internal server error: ' + error.message });
   }
 }

@@ -42,9 +42,9 @@ export default async function handler(request, response) {
       ? `${systemPrompt}\n\nHere is your character knowledge:\n${knowledgeText}`
       : systemPrompt;
 
-    // Use stable model - gemini-pro is guaranteed to work on all accounts
-    // This is the most reliable model for free tier
-    const model = process.env.GEMINI_MODEL || 'gemini-pro';
+    // Use gemini-1.5-pro - current stable version (as of Feb 2026)
+    // Alternative: gemini-2.5-pro (if available on your account)
+    const model = process.env.GEMINI_MODEL || 'gemini-1.5-pro';
 
     // Convert to Gemini format
     const geminiMessages = messages.map(msg => ({

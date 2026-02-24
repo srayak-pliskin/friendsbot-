@@ -1,4 +1,6 @@
 // Vercel Serverless Function - Streaming Gemini API
+import { queryKnowledge } from './pinecone-query.js';
+
 export default async function handler(request, response) {
   response.setHeader('Access-Control-Allow-Credentials', true);
   response.setHeader('Access-Control-Allow-Origin', '*');
@@ -15,7 +17,7 @@ export default async function handler(request, response) {
     return;
   }
 
-  const { messages, systemPrompt, rentryUrls } = request.body;
+  const { messages, systemPrompt, character, userQuery } = request.body;
 
   if (!messages || !systemPrompt) {
     response.status(400).json({ error: 'Missing required fields' });
@@ -23,18 +25,10 @@ export default async function handler(request, response) {
   }
 
   try {
-    // Fetch Rentry knowledge pages server-side
+    // Fetch knowledge from Pinecone vector database
     let knowledgeText = '';
-    if (rentryUrls && rentryUrls.length > 0) {
-      const fetchPromises = rentryUrls.map(url =>
-        fetch(url, {
-          headers: { 'User-Agent': 'Mozilla/5.0' }
-        })
-        .then(r => r.ok ? r.text() : '')
-        .catch(() => '')
-      );
-      const results = await Promise.all(fetchPromises);
-      knowledgeText = results.filter(Boolean).join('\n\n');
+    if (character && userQuery) {
+      knowledgeText = await queryKnowledge(character, userQuery);
     }
 
     // Build full system prompt

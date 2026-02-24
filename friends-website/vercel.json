@@ -1,5 +1,13 @@
 {
   "buildCommand": "npm install && npm run build",
   "outputDirectory": "dist",
-  "framework": "vite"
+  "framework": "vite",
+  "functions": {
+    "api/chat-stream.js": {
+      "maxDuration": 30
+    },
+    "api/chat.js": {
+      "maxDuration": 30
+    }
+  }
 }

@@ -53,9 +53,9 @@ export default async function handler(request, response) {
       parts: [{ text: 'Understood! I will stay in character.' }]
     });
 
-    // Call Gemini API - STREAMING enabled
+    // Call Gemini API - non-streaming for JSON response
     const apiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${process.env.GOOGLE_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GOOGLE_API_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -72,47 +72,15 @@ export default async function handler(request, response) {
     if (!apiResponse.ok) {
       const errorData = await apiResponse.json();
       console.error('Gemini API error:', errorData);
-      return response.status(apiResponse.status).json({ 
-        error: errorData.error?.message || 'Gemini API error' 
+      return response.status(apiResponse.status).json({
+        error: errorData.error?.message || 'Gemini API error'
       });
     }
 
-    // Set up SSE streaming
-    response.setHeader('Content-Type', 'text/event-stream');
-    response.setHeader('Cache-Control', 'no-cache');
-    response.setHeader('Connection', 'keep-alive');
+    const data = await apiResponse.json();
+    const content = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
-    // Stream the response
-    const reader = apiResponse.body.getReader();
-    const decoder = new TextDecoder();
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      const chunk = decoder.decode(value);
-      const lines = chunk.split('\n');
-
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const jsonStr = line.slice(6);
-          if (jsonStr.trim() === '[DONE]') continue;
-          
-          try {
-            const data = JSON.parse(jsonStr);
-            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (text) {
-              response.write(`data: ${JSON.stringify({ content: text })}\n\n`);
-            }
-          } catch (e) {
-            // Skip malformed JSON
-          }
-        }
-      }
-    }
-
-    response.write('data: [DONE]\n\n');
-    response.end();
+    response.status(200).json({ content });
 
   } catch (error) {
     console.error('Error:', error);

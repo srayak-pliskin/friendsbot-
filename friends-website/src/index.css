@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --door-purple: #6B2FA0;
+  --deep-purple: #3A1766;
+  --lavender: #C9A6E8;
+  --soft-lilac: #EDE3F7;
+  --gold: #F2C94C;
+  --bright-gold: #FFD700;
+  --cream: #FFF9F0;
+  --charcoal: #1E1B2E;
+  --peach: #F7C5A8;
+  --frame-gold: #D4A843;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -9,5 +22,198 @@
 }
 
 body {
-  font-family: Georgia, serif;
+  font-family: 'Lora', Georgia, serif;
+  background: var(--charcoal);
+  color: var(--charcoal);
+  /* Added for animated background */
+  background: linear-gradient(-45deg, #1a1625, #2a1b3d, #1e1b2e, #2d1b2e);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
 }
+
+/* Paper texture overlay */
+.paper-texture {
+  position: relative;
+}
+.paper-texture::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.025;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--soft-lilac);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--door-purple);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--deep-purple);
+}
+
+/* Animations */
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes gentlePulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+@keyframes dotBounce {
+  0%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-6px); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-8px) rotate(1deg); }
+  66% { transform: translateY(4px) rotate(-1deg); }
+}
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+@keyframes cardGlow {
+  0%, 100% { box-shadow: 0 4px 20px rgba(107,47,160,0.1); }
+  50% { box-shadow: 0 4px 30px rgba(107,47,160,0.25); }
+}
+@keyframes marqueeScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes scaleIn {
+  0% { opacity: 0; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes popIn {
+  0% { opacity: 0; transform: scale(0.8) translateY(10px); }
+  70% { transform: scale(1.05) translateY(-2px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* === Central Perk Scene === */
+@keyframes lampGlow {
+  0%, 100% { opacity: 0.5; filter: blur(6px); }
+  50% { opacity: 0.9; filter: blur(10px); }
+}
+@keyframes steamFloat {
+  0% { opacity: 0; transform: translateY(0) scaleX(1); }
+  30% { opacity: 0.6; }
+  100% { opacity: 0; transform: translateY(-18px) scaleX(1.5); }
+}
+@keyframes confettiFall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(500px) rotate(720deg); opacity: 0; }
+}
+.confetti-piece {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  animation: confettiFall 1.5s ease-out forwards;
+}
+
+/* === Smelly Cat === */
+/* Stink wisps rising */
+@keyframes stinkRise {
+  0% { opacity: 0; transform: translateY(0) scaleX(1); }
+  30% { opacity: 0.6; }
+  100% { opacity: 0; transform: translateY(-14px) scaleX(1.4); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+.animate-slide-up {
+  animation: slideUp 0.6s ease-out forwards;
+}
+.animate-scale-in {
+  animation: scaleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.animate-pop-in {
+  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+.animate-float-delayed {
+  animation: float 5s ease-in-out 1s infinite alternate;
+}
+.animate-shimmer {
+  background: linear-gradient(90deg, var(--gold) 0%, var(--bright-gold) 50%, var(--gold) 100%);
+  background-size: 200% auto;
+  animation: shimmer 3s linear infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Typing dots */
+.typing-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--door-purple);
+  animation: dotBounce 1.4s infinite ease-in-out both;
+}
+.typing-dot:nth-child(1) { animation-delay: 0s; }
+.typing-dot:nth-child(2) { animation-delay: 0.16s; }
+.typing-dot:nth-child(3) { animation-delay: 0.32s; }
+
+/* Marquee for fun quotes */
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marqueeScroll 30s linear infinite;
+}
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+/* Smelly cat — position driven by GSAP + Matter.js */
+.smelly-cat-prowler {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 20;
+  pointer-events: auto;
+  cursor: grab;
+  will-change: transform;
+}
+.smelly-cat-prowler:active,
+.smelly-cat-prowler.dragging {
+  cursor: grabbing;
+}
+/* Stink wisps floating above cat */
+.smelly-cat-prowler .stink-wisp {
+  position: absolute;
+  width: 3px;
+  height: 12px;
+  top: -10px;
+  border-radius: 50%;
+  background: rgba(180,160,255,0.7);
+  opacity: 0;
+  animation: stinkRise 2.2s ease-out infinite;
+}
+.smelly-cat-prowler .stink-wisp:nth-child(1) { left: 15px; animation-delay: 0s; }
+.smelly-cat-prowler .stink-wisp:nth-child(2) { left: 28px; animation-delay: 0.7s; }
+.smelly-cat-prowler .stink-wisp:nth-child(3) { left: 40px; animation-delay: 1.4s; }

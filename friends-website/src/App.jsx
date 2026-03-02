@@ -393,7 +393,7 @@ Respond naturally as ${char.name} would, using the knowledge provided to be accu
         padding: '1.25rem 0.75rem 1rem',
         animationDelay: `${index * 120}ms`,
         opacity: 0,
-        animation: `fadeIn 0.5s ease-out ${index * 120}ms forwards, cardGlow 3s ease-in-out ${index * 500}ms infinite`,
+        animation: `fadeIn 0.5s ease-out ${index * 120}ms forwards`,
       }}
     >
       {/* Colored top accent bar */}
@@ -459,11 +459,10 @@ Respond naturally as ${char.name} would, using the knowledge provided to be accu
       <div ref={pageRef} className="min-h-screen flex flex-col relative overflow-hidden" style={{
         background: 'var(--charcoal)',
       }}>
-        {/* Background photo */}
+        {/* Background photo — no blur filter for performance */}
         <div className="absolute inset-0 bg-cover bg-center" style={{
           backgroundImage: `url('${BG_IMAGE}')`,
-          filter: 'brightness(0.2) blur(2px) saturate(0.6)',
-          transform: 'scale(1.05)',
+          opacity: 0.15,
         }} />
 
         {/* Purple overlay gradient */}

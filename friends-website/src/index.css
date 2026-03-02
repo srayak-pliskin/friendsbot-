@@ -25,10 +25,6 @@ body {
   font-family: 'Lora', Georgia, serif;
   background: var(--charcoal);
   color: var(--charcoal);
-  /* Added for animated background */
-  background: linear-gradient(-45deg, #1a1625, #2a1b3d, #1e1b2e, #2d1b2e);
-  background-size: 400% 400%;
-  animation: gradientBG 15s ease infinite;
 }
 
 /* Paper texture overlay */
@@ -92,8 +88,8 @@ body {
   100% { background-position: 200% center; }
 }
 @keyframes cardGlow {
-  0%, 100% { box-shadow: 0 4px 20px rgba(107,47,160,0.1); }
-  50% { box-shadow: 0 4px 30px rgba(107,47,160,0.25); }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.92; }
 }
 @keyframes marqueeScroll {
   0% { transform: translateX(0); }
@@ -112,8 +108,8 @@ body {
 
 /* === Central Perk Scene === */
 @keyframes lampGlow {
-  0%, 100% { opacity: 0.5; filter: blur(6px); }
-  50% { opacity: 0.9; filter: blur(10px); }
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.9; }
 }
 @keyframes steamFloat {
   0% { opacity: 0; transform: translateY(0) scaleX(1); }

@@ -381,16 +381,20 @@ export function createCatController(containerEl, catEl, furnitureEls) {
   function handleResize() {
     if (destroyed) return;
     const r = containerEl.getBoundingClientRect();
-    Body.setPosition(floor, { x: r.width / 2, y: r.height + 25 });
-    Body.setPosition(ceiling, { x: r.width / 2, y: -25 });
-    Body.setPosition(leftWall, { x: -25, y: r.height / 2 });
-    Body.setPosition(rightWall, { x: r.width + 25, y: r.height / 2 });
 
-    // Resize boundary dimensions
+    // setVertices resets the body position to the vertices centroid,
+    // so setPosition must be called AFTER setVertices.
     Body.setVertices(floor, Bodies.rectangle(r.width / 2, r.height + 25, r.width * 2, 50).vertices);
+    Body.setPosition(floor, { x: r.width / 2, y: r.height + 25 });
+
     Body.setVertices(ceiling, Bodies.rectangle(r.width / 2, -25, r.width * 2, 50).vertices);
+    Body.setPosition(ceiling, { x: r.width / 2, y: -25 });
+
     Body.setVertices(leftWall, Bodies.rectangle(-25, r.height / 2, 50, r.height * 2).vertices);
+    Body.setPosition(leftWall, { x: -25, y: r.height / 2 });
+
     Body.setVertices(rightWall, Bodies.rectangle(r.width + 25, r.height / 2, 50, r.height * 2).vertices);
+    Body.setPosition(rightWall, { x: r.width + 25, y: r.height / 2 });
 
     createSurfaceBodies();
   }

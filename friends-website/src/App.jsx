@@ -198,6 +198,140 @@ const SmellyCat = ({ containerRef }) => {
   );
 };
 
+const spawnConfetti = (e) => {
+  const emojis = ['☕', '🦞', '❤️', '🍕', '🎸', '🛋️'];
+  const x = e.clientX;
+  const y = e.clientY;
+  for (let i = 0; i < 30; i++) {
+    const span = document.createElement('span');
+    span.className = 'confetti-piece';
+    span.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    span.style.left = `${x + (Math.random() - 0.5) * 200}px`;
+    span.style.top = `${y}px`;
+    span.style.fontSize = `${14 + Math.random() * 16}px`;
+    span.style.animationDelay = `${Math.random() * 0.3}s`;
+    document.body.appendChild(span);
+    span.addEventListener('animationend', () => span.remove());
+  }
+};
+
+const CentralPerkScene = () => (
+  <div className="cat-surface relative z-10 flex justify-center py-4" style={{ opacity: 0.7 }}>
+    <svg viewBox="0 0 500 180" style={{ maxWidth: '500px', width: '90%' }} xmlns="http://www.w3.org/2000/svg">
+      {/* Ceiling lamp */}
+      <line x1="250" y1="0" x2="250" y2="30" stroke="#8B7355" strokeWidth="2" />
+      <polygon points="235,30 265,30 270,45 230,45" fill="#D4A843" />
+      <ellipse cx="250" cy="38" rx="25" ry="12" fill="#FFD700" opacity="0.3" style={{ animation: 'lampGlow 3s ease-in-out infinite' }} />
+
+      {/* Orange couch */}
+      <rect x="130" y="90" width="240" height="55" rx="18" fill="#E8762B" />
+      <rect x="140" y="80" width="70" height="65" rx="14" fill="#D4691A" />
+      <rect x="215" y="80" width="70" height="65" rx="14" fill="#D4691A" />
+      <rect x="290" y="80" width="70" height="65" rx="14" fill="#D4691A" />
+      {/* Couch arms */}
+      <rect x="115" y="75" width="25" height="70" rx="10" fill="#C75E15" />
+      <rect x="360" y="75" width="25" height="70" rx="10" fill="#C75E15" />
+      {/* Couch legs */}
+      <rect x="150" y="145" width="8" height="15" rx="2" fill="#5C3A1E" />
+      <rect x="342" y="145" width="8" height="15" rx="2" fill="#5C3A1E" />
+
+      {/* Coffee table */}
+      <rect x="190" y="155" width="120" height="8" rx="3" fill="#6B4226" />
+      <rect x="210" y="163" width="6" height="14" rx="2" fill="#5C3A1E" />
+      <rect x="284" y="163" width="6" height="14" rx="2" fill="#5C3A1E" />
+
+      {/* Coffee cups */}
+      <rect x="225" y="147" width="14" height="10" rx="2" fill="#FFF9F0" />
+      <rect x="239" y="150" width="5" height="4" rx="2" fill="none" stroke="#FFF9F0" strokeWidth="1.5" />
+      <rect x="265" y="147" width="14" height="10" rx="2" fill="#FFF9F0" />
+      <rect x="279" y="150" width="5" height="4" rx="2" fill="none" stroke="#FFF9F0" strokeWidth="1.5" />
+
+      {/* Steam wisps */}
+      <ellipse cx="232" cy="143" rx="2" ry="5" fill="rgba(255,255,255,0.5)" style={{ animation: 'steamFloat 2s ease-out infinite' }} />
+      <ellipse cx="228" cy="140" rx="1.5" ry="4" fill="rgba(255,255,255,0.4)" style={{ animation: 'steamFloat 2.2s ease-out 0.5s infinite' }} />
+      <ellipse cx="272" cy="143" rx="2" ry="5" fill="rgba(255,255,255,0.5)" style={{ animation: 'steamFloat 2s ease-out 0.3s infinite' }} />
+      <ellipse cx="268" cy="140" rx="1.5" ry="4" fill="rgba(255,255,255,0.4)" style={{ animation: 'steamFloat 2.2s ease-out 0.8s infinite' }} />
+    </svg>
+  </div>
+);
+
+const CharCard = ({ charKey, char, index, onSelect }) => (
+  <button
+    onClick={(e) => { spawnConfetti(e); onSelect(charKey); }}
+    className="furniture group relative overflow-hidden transition-all duration-300 animate-fade-in hover:scale-[1.06] cursor-pointer"
+    style={{
+      background: 'linear-gradient(150deg, var(--cream) 0%, var(--soft-lilac) 100%)',
+      border: '2px solid var(--lavender)',
+      borderRadius: '18px',
+      boxShadow: '0 4px 20px rgba(107,47,160,0.12)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '1.25rem 0.75rem 1rem',
+      animationDelay: `${index * 120}ms`,
+      opacity: 0,
+      animation: `fadeIn 0.5s ease-out ${index * 120}ms forwards`,
+    }}
+  >
+    {/* Colored top accent bar */}
+    <div className="absolute top-0 left-0 right-0 h-1 transition-all duration-300 group-hover:h-1.5" style={{
+      background: 'linear-gradient(90deg, var(--door-purple), var(--gold))',
+      borderRadius: '18px 18px 0 0',
+    }} />
+
+    {char.photo ? (
+      <div className="rounded-full overflow-hidden mb-2.5 transition-transform duration-300 group-hover:scale-105" style={{
+        width: '85px', height: '85px',
+        border: '3px solid var(--door-purple)',
+        boxShadow: '0 0 0 3px rgba(107,47,160,0.15), 0 4px 16px rgba(107,47,160,0.2)',
+        flexShrink: 0,
+      }}>
+        <img
+          src={char.photo}
+          alt={char.name}
+          className="w-full h-full object-cover object-top"
+          onError={(e) => {
+            e.target.style.display = 'none';
+            e.target.parentNode.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--door-purple);font-size:1.8rem;font-weight:900;color:var(--cream);">${char.name[0]}</div>`;
+          }}
+        />
+      </div>
+    ) : (
+      <div className="rounded-full mb-2.5 flex items-center justify-center text-3xl" style={{
+        width: '85px', height: '85px',
+        background: 'var(--door-purple)',
+        border: '3px solid var(--gold)',
+        color: 'var(--cream)',
+      }}>{char.avatar}</div>
+    )}
+
+    <div style={{
+      fontFamily: '"Playfair Display", Georgia, serif',
+      fontWeight: 700,
+      fontSize: '1rem',
+      color: 'var(--deep-purple)',
+      textAlign: 'center',
+      lineHeight: 1.2,
+    }}>
+      {char.name}
+    </div>
+
+    {/* Tagline on hover */}
+    <div className="text-xs mt-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:translate-y-0 translate-y-1" style={{
+      color: 'var(--door-purple)',
+      fontFamily: 'Lora, Georgia, serif',
+      fontStyle: 'italic',
+      textAlign: 'center',
+      lineHeight: 1.3,
+      maxWidth: '160px',
+      fontSize: '0.68rem',
+    }}>
+      {char.tagline}
+    </div>
+  </button>
+);
+
 const FriendsChat = () => {
   const [selectedCharacter, setSelectedCharacter] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -235,7 +369,7 @@ CRITICAL INSTRUCTIONS:
 
 Respond naturally as ${char.name} would, using the knowledge provided to be accurate about events, relationships, and details from the show.`;
 
-      const messages = [
+      const apiMessages = [
         ...conversationHistory.map(msg => ({
           role: msg.role,
           content: msg.content
@@ -248,7 +382,7 @@ Respond naturally as ${char.name} would, using the knowledge provided to be accu
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           systemPrompt,
-          messages,
+          messages: apiMessages,
           character: char.characterKey,
           userQuery: userMessage
         })
@@ -304,7 +438,7 @@ Respond naturally as ${char.name} would, using the knowledge provided to be accu
     setStreamingText('');
   };
 
-  const handleKeyPress = (e) => {
+  const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
@@ -319,140 +453,6 @@ Respond naturally as ${char.name} would, using the knowledge provided to be accu
 
   // Character Selection Screen
   const charEntries = Object.entries(CHARACTERS);
-
-  const spawnConfetti = (e) => {
-    const emojis = ['☕', '🦞', '❤️', '🍕', '🎸', '🛋️'];
-    const x = e.clientX;
-    const y = e.clientY;
-    for (let i = 0; i < 30; i++) {
-      const span = document.createElement('span');
-      span.className = 'confetti-piece';
-      span.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-      span.style.left = `${x + (Math.random() - 0.5) * 200}px`;
-      span.style.top = `${y}px`;
-      span.style.fontSize = `${14 + Math.random() * 16}px`;
-      span.style.animationDelay = `${Math.random() * 0.3}s`;
-      document.body.appendChild(span);
-      span.addEventListener('animationend', () => span.remove());
-    }
-  };
-
-  const CentralPerkScene = () => (
-    <div className="cat-surface relative z-10 flex justify-center py-4" style={{ opacity: 0.7 }}>
-      <svg viewBox="0 0 500 180" style={{ maxWidth: '500px', width: '90%' }} xmlns="http://www.w3.org/2000/svg">
-        {/* Ceiling lamp */}
-        <line x1="250" y1="0" x2="250" y2="30" stroke="#8B7355" strokeWidth="2" />
-        <polygon points="235,30 265,30 270,45 230,45" fill="#D4A843" />
-        <ellipse cx="250" cy="38" rx="25" ry="12" fill="#FFD700" opacity="0.3" style={{ animation: 'lampGlow 3s ease-in-out infinite' }} />
-
-        {/* Orange couch */}
-        <rect x="130" y="90" width="240" height="55" rx="18" fill="#E8762B" />
-        <rect x="140" y="80" width="70" height="65" rx="14" fill="#D4691A" />
-        <rect x="215" y="80" width="70" height="65" rx="14" fill="#D4691A" />
-        <rect x="290" y="80" width="70" height="65" rx="14" fill="#D4691A" />
-        {/* Couch arms */}
-        <rect x="115" y="75" width="25" height="70" rx="10" fill="#C75E15" />
-        <rect x="360" y="75" width="25" height="70" rx="10" fill="#C75E15" />
-        {/* Couch legs */}
-        <rect x="150" y="145" width="8" height="15" rx="2" fill="#5C3A1E" />
-        <rect x="342" y="145" width="8" height="15" rx="2" fill="#5C3A1E" />
-
-        {/* Coffee table */}
-        <rect x="190" y="155" width="120" height="8" rx="3" fill="#6B4226" />
-        <rect x="210" y="163" width="6" height="14" rx="2" fill="#5C3A1E" />
-        <rect x="284" y="163" width="6" height="14" rx="2" fill="#5C3A1E" />
-
-        {/* Coffee cups */}
-        <rect x="225" y="147" width="14" height="10" rx="2" fill="#FFF9F0" />
-        <rect x="239" y="150" width="5" height="4" rx="2" fill="none" stroke="#FFF9F0" strokeWidth="1.5" />
-        <rect x="265" y="147" width="14" height="10" rx="2" fill="#FFF9F0" />
-        <rect x="279" y="150" width="5" height="4" rx="2" fill="none" stroke="#FFF9F0" strokeWidth="1.5" />
-
-        {/* Steam wisps */}
-        <ellipse cx="232" cy="143" rx="2" ry="5" fill="rgba(255,255,255,0.5)" style={{ animation: 'steamFloat 2s ease-out infinite' }} />
-        <ellipse cx="228" cy="140" rx="1.5" ry="4" fill="rgba(255,255,255,0.4)" style={{ animation: 'steamFloat 2.2s ease-out 0.5s infinite' }} />
-        <ellipse cx="272" cy="143" rx="2" ry="5" fill="rgba(255,255,255,0.5)" style={{ animation: 'steamFloat 2s ease-out 0.3s infinite' }} />
-        <ellipse cx="268" cy="140" rx="1.5" ry="4" fill="rgba(255,255,255,0.4)" style={{ animation: 'steamFloat 2.2s ease-out 0.8s infinite' }} />
-      </svg>
-    </div>
-  );
-
-  const CharCard = ({ charKey, char, index }) => (
-    <button
-      onClick={(e) => { spawnConfetti(e); setSelectedCharacter(charKey); }}
-      className="furniture group relative overflow-hidden transition-all duration-300 animate-fade-in hover:scale-[1.06] cursor-pointer"
-      style={{
-        background: 'linear-gradient(150deg, var(--cream) 0%, var(--soft-lilac) 100%)',
-        border: '2px solid var(--lavender)',
-        borderRadius: '18px',
-        boxShadow: '0 4px 20px rgba(107,47,160,0.12)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '1.25rem 0.75rem 1rem',
-        animationDelay: `${index * 120}ms`,
-        opacity: 0,
-        animation: `fadeIn 0.5s ease-out ${index * 120}ms forwards`,
-      }}
-    >
-      {/* Colored top accent bar */}
-      <div className="absolute top-0 left-0 right-0 h-1 transition-all duration-300 group-hover:h-1.5" style={{
-        background: 'linear-gradient(90deg, var(--door-purple), var(--gold))',
-        borderRadius: '18px 18px 0 0',
-      }} />
-
-      {char.photo ? (
-        <div className="rounded-full overflow-hidden mb-2.5 transition-transform duration-300 group-hover:scale-105" style={{
-          width: '85px', height: '85px',
-          border: '3px solid var(--door-purple)',
-          boxShadow: '0 0 0 3px rgba(107,47,160,0.15), 0 4px 16px rgba(107,47,160,0.2)',
-          flexShrink: 0,
-        }}>
-          <img
-            src={char.photo}
-            alt={char.name}
-            className="w-full h-full object-cover object-top"
-            onError={(e) => {
-              e.target.style.display = 'none';
-              e.target.parentNode.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--door-purple);font-size:1.8rem;font-weight:900;color:var(--cream);">${char.name[0]}</div>`;
-            }}
-          />
-        </div>
-      ) : (
-        <div className="rounded-full mb-2.5 flex items-center justify-center text-3xl" style={{
-          width: '85px', height: '85px',
-          background: 'var(--door-purple)',
-          border: '3px solid var(--gold)',
-          color: 'var(--cream)',
-        }}>{char.avatar}</div>
-      )}
-
-      <div style={{
-        fontFamily: '"Playfair Display", Georgia, serif',
-        fontWeight: 700,
-        fontSize: '1rem',
-        color: 'var(--deep-purple)',
-        textAlign: 'center',
-        lineHeight: 1.2,
-      }}>
-        {char.name}
-      </div>
-
-      {/* Tagline on hover */}
-      <div className="text-xs mt-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:translate-y-0 translate-y-1" style={{
-        color: 'var(--door-purple)',
-        fontFamily: 'Lora, Georgia, serif',
-        fontStyle: 'italic',
-        textAlign: 'center',
-        lineHeight: 1.3,
-        maxWidth: '160px',
-        fontSize: '0.68rem',
-      }}>
-        {char.tagline}
-      </div>
-    </button>
-  );
 
   if (!selectedCharacter) {
     return (
@@ -538,7 +538,7 @@ Respond naturally as ${char.name} would, using the knowledge provided to be accu
             maxWidth: '660px',
             position: 'relative',
           }}>
-            {charEntries.map(([k, c], i) => <CharCard key={k} charKey={k} char={c} index={i} />)}
+            {charEntries.map(([k, c], i) => <CharCard key={k} charKey={k} char={c} index={i} onSelect={setSelectedCharacter} />)}
           </div>
         </div>
 
@@ -851,7 +851,7 @@ Respond naturally as ${char.name} would, using the knowledge provided to be accu
                 <textarea
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={handleKeyPress}
+                  onKeyDown={handleKeyDown}
                   placeholder={`Message ${character.name.split(' ')[0]}...`}
                   disabled={isLoading}
                   rows={1}

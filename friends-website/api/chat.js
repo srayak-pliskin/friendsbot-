@@ -2,8 +2,9 @@
 import { queryKnowledge } from './pinecone-query.js';
 
 export default async function handler(request, response) {
+  const allowedOrigin = process.env.ALLOWED_ORIGIN || '*';
   response.setHeader('Access-Control-Allow-Credentials', true);
-  response.setHeader('Access-Control-Allow-Origin', '*');
+  response.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   response.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
   response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
@@ -44,15 +45,6 @@ export default async function handler(request, response) {
       parts: [{ text: msg.content }]
     }));
 
-    geminiMessages.unshift({
-      role: 'user',
-      parts: [{ text: fullSystemPrompt }]
-    });
-    geminiMessages.splice(1, 0, {
-      role: 'model',
-      parts: [{ text: 'Understood! I will stay in character.' }]
-    });
-
     // Call Gemini API - non-streaming for JSON response
     const apiResponse = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GOOGLE_API_KEY}`,
@@ -60,6 +52,7 @@ export default async function handler(request, response) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          systemInstruction: { parts: [{ text: fullSystemPrompt }] },
           contents: geminiMessages,
           generationConfig: {
             temperature: 0.9,
